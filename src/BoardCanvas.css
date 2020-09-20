@@ -1,0 +1,9 @@
+.boardCanvasContainer{
+
+  margin-top: 1%;
+}
+
+.boardCanvas{
+  background-color: #DEB887;
+  border: solid 1px black;
+}
