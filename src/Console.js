@@ -35,7 +35,7 @@ class Console extends React.Component{
 
     return <div className = "consoleContainer">
               <textarea id = "consoleInfo"
-              className = "consoleInfo" style = {this.infoStyle} value = {this.state.history} readonly>  </textarea>
+              className = "consoleInfo" style = {this.infoStyle} value = {this.state.history} readOnly>  </textarea>
           </div>
   }
 }

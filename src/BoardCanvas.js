@@ -1,5 +1,6 @@
 import React from "react";
 import Console from "./Console";
+import {v4 as uuidv4} from "uuid";
 import "./BoardCanvas.css"
 
 class BoardCanvas extends React.Component{
@@ -27,7 +28,15 @@ class BoardCanvas extends React.Component{
       }
       new_board.push(boardRow);
     }
-
+    const new_id = uuidv4();
+    const url = "/createNewBoard"
+    fetch(url,
+      {method: "POST",
+      body: new_id,
+      headers: new Headers({
+        "content-type" : "application/json"
+      })}
+    );
     this.setState({width : w, height: h, board: new_board});
   }
 
