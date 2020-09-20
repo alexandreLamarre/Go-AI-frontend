@@ -1,0 +1,17 @@
+.consoleContainer{
+  float:right;
+    margin-right: 1%;
+
+}
+
+.consoleInfo{
+  background-color: #FFFFFF;
+  text-align: center;
+  border: 1px black solid;
+  resize: none;
+}
+
+.move{
+  text-align: left;
+  margin-left: 10%;
+}

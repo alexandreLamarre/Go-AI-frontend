@@ -1,5 +1,5 @@
 import React from "react";
-
+import Console from "./Console";
 import "./BoardCanvas.css"
 
 class BoardCanvas extends React.Component{
@@ -7,17 +7,18 @@ class BoardCanvas extends React.Component{
     super(props);
 
     this.state = {
-      height : 0,
-      width: 0,
+      height : window.innerHeight*0.7,
+      width: window.innerHeight*0.7,
       player : 2, // 1 for black, 2 for white
       board : [],
     };
     this.canvas = React.createRef();
+    this.console = React.createRef();
   }
 
   componentDidMount(){
-    const w = window.innerHeight*0.85;
-    const h = window.innerHeight*0.85;
+    const w = window.innerHeight*0.7;
+    const h = window.innerHeight*0.7;
     const new_board = [];
     for(let i = 0; i < 19; i++){
       const boardRow = [];
@@ -81,13 +82,15 @@ class BoardCanvas extends React.Component{
 
     const boardX = Math.round(pos[0]/tileSize -1);
     const boardY = Math.round(pos[1]/tileSize -1);
-
+    var next_player = this.state.player;
     const board = this.state.board;
     if(boardX >= 0 && boardY >= 0 && boardX < board.length && boardY < board.length){
-      if(board[boardX][boardY] === 0)board[boardX][boardY] = this.state.player;
+      if(board[boardX][boardY] === 0){board[boardX][boardY] = this.state.player;
+      const player = this.state.player === 2? "Black": "White";
+      this.console.current.pushConsole("\n"+player+ " moved to (" + boardX.toString()+","+boardY.toString()+ ")");
+      next_player = this.state.player === 1? 2: 1;}
     }
     // console.log(boardX, boardY)
-    const next_player = this.state.player === 1? 2: 1;
     this.setState({board: board, player: next_player});
   }
 
@@ -107,6 +110,11 @@ class BoardCanvas extends React.Component{
               className = "boardCanvas"
               onMouseDown = {(event) => this.play(event)}>
               </canvas>
+              <Console ref = {this.console}
+              height = {(this.state.height/0.70) *0.30}
+              width = {(this.state.width/0.70*0.30)}
+              className = "consoleContainer">
+              </Console>
            </div>
   }
 
