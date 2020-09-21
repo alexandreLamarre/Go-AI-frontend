@@ -51,14 +51,14 @@ class BoardCanvas extends React.Component{
 
     for(let i = 1; i <numVerticalLines+1; i++){
       ctx.beginPath();
-      ctx.moveTo(tileSize*i, 0);
-      ctx.lineTo(tileSize*i, this.canvas.current.height);
+      ctx.moveTo(tileSize*i, tileSize);
+      ctx.lineTo(tileSize*i, this.canvas.current.height-tileSize);
       ctx.stroke();
       ctx.closePath();
 
       ctx.beginPath();
-      ctx.moveTo(0, tileSize*i);
-      ctx.lineTo(this.canvas.current.width, tileSize*i);
+      ctx.moveTo(tileSize, tileSize*i);
+      ctx.lineTo(this.canvas.current.width- tileSize, tileSize*i);
       ctx.stroke();
       ctx.closePath();
     }
@@ -141,5 +141,8 @@ async function get_next_board(uuid, player, x, y, that){
     }
   );
   let data = await response.json();
+  that.console.current.pushConsole(data.message);
+  var opponent = player === 1?2:1;
+  if(data.played === true) that.setState({player:opponent});
   that.setState({board:data.board});
 }
