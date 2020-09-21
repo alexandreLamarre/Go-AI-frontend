@@ -12,6 +12,7 @@ class BoardCanvas extends React.Component{
       width: window.innerHeight*0.7,
       player : 2, // 1 for black, 2 for white
       board : [],
+      uuid: 0,
     };
     this.canvas = React.createRef();
     this.console = React.createRef();
@@ -29,15 +30,14 @@ class BoardCanvas extends React.Component{
       new_board.push(boardRow);
     }
     const new_id = uuidv4();
-    const url = "/createNewBoard"
+    const url = "/input"
     fetch(url,
       {method: "POST",
-      body: new_id,
-      headers: new Headers({
-        "content-type" : "application/json"
-      })}
+      body: JSON.stringify({id : new_id,board: new_board}),
+      headers: {"content-type" : "application/json"},
+    }
     );
-    this.setState({width : w, height: h, board: new_board});
+    this.setState({width : w, height: h, board: new_board, uuid: new_id});
   }
 
   componentDidUpdate(){
@@ -91,16 +91,17 @@ class BoardCanvas extends React.Component{
 
     const boardX = Math.round(pos[0]/tileSize -1);
     const boardY = Math.round(pos[1]/tileSize -1);
+    const that = this;
+    get_next_board(this.state.uuid, this.state.player, boardX, boardY, that);
     var next_player = this.state.player;
-    const board = this.state.board;
-    if(boardX >= 0 && boardY >= 0 && boardX < board.length && boardY < board.length){
-      if(board[boardX][boardY] === 0){board[boardX][boardY] = this.state.player;
-      const player = this.state.player === 2? "Black": "White";
-      this.console.current.pushConsole("\n"+player+ " moved to (" + boardX.toString()+","+boardY.toString()+ ")");
-      next_player = this.state.player === 1? 2: 1;}
-    }
+    // const board = this.state.board;
+    // if(boardX >= 0 && boardY >= 0 && boardX < board.length && boardY < board.length){
+    //   if(board[boardX][boardY] === 0){board[boardX][boardY] = this.state.player;
+    //   const player = this.state.player === 2? "Black": "White";
+    //   this.console.current.pushConsole("\n"+player+ " moved to (" + boardX.toString()+","+boardY.toString()+ ")");
+    //   next_player = this.state.player === 1? 2: 1;}
+    // }
     // console.log(boardX, boardY)
-    this.setState({board: board, player: next_player});
   }
 
 
@@ -130,3 +131,15 @@ class BoardCanvas extends React.Component{
 }
 
 export default BoardCanvas;
+
+async function get_next_board(uuid, player, x, y, that){
+  const url = "/playmoveplayer";
+  let response = await fetch(url,
+    {method: "POST",
+    body: JSON.stringify({id : uuid, player:player, x: x, y: y}),
+    headers: {"content-type" : "application/json"},
+    }
+  );
+  let data = await response.json();
+  that.setState({board:data.board});
+}
