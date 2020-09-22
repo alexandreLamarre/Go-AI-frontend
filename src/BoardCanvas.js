@@ -70,7 +70,7 @@ class BoardCanvas extends React.Component{
         if(this.state.board[i][j] === 1){
           ctx.beginPath();
           ctx.arc((i+1)*tileSize, (j+1) *tileSize, tileSize/2.5, 0, Math.PI*2);
-          ctx.fillStyle = "#FFFFFF";
+          ctx.fillStyle = "#000000";
           ctx.fill();
           ctx.closePath();
         }
@@ -78,12 +78,13 @@ class BoardCanvas extends React.Component{
           ctx.beginPath();
           console.log((i+1)*tileSize, (j+1) *tileSize)
           ctx.arc((i+1)*tileSize, (j+1) *tileSize, tileSize/2.5, 0, Math.PI*2);
-          ctx.fillStyle = "#000000";
+          ctx.fillStyle = "#FFFFFF";
           ctx.fill();
           ctx.closePath();
         }
       }
     }
+    document.getElementById("consoleInfo").scrollTop = document.getElementById("consoleInfo").scrollHeight
     if(this.state.players[this.state.player-1] == "ai"){
       this.getAIMove();
     }
@@ -130,6 +131,11 @@ class BoardCanvas extends React.Component{
               </Console>
               <br></br>
               <p className = "playing"> Now playing: {this.state.player === 1? "Black": "White"}</p>
+              <select>
+                <option value = "random"> Random </option>
+                <option value = "minimax"> Minimax </option>
+                <option value = "alphabeta"> AlphaBeta </option>
+              </select>
            </div>
   }
 
