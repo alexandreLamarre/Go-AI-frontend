@@ -147,7 +147,8 @@ async function get_next_board(uuid, player, x, y, that){
   );
   let data = await response.json();
   that.console.current.pushConsole(data.message);
-  var opponent = player === 1?2:1;
+  if(data.valid)var opponent = player === 1?2:1;
+  else{var opponent = player}
   // if(data.played === true) that.setState({player:opponent});
   await that.setState({board:data.board, player:opponent});
 }
