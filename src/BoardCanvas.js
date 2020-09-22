@@ -22,9 +22,10 @@ class BoardCanvas extends React.Component{
     const w = window.innerHeight*0.7;
     const h = window.innerHeight*0.7;
     const new_board = [];
-    for(let i = 0; i < 19; i++){
+    const boardSize = 19;
+    for(let i = 0; i < boardSize; i++){
       const boardRow = [];
-      for(let j = 0; j < 19; j++){
+      for(let j = 0; j < boardSize; j++){
         boardRow.push(0);
       }
       new_board.push(boardRow);
@@ -33,7 +34,7 @@ class BoardCanvas extends React.Component{
     const url = "/input"
     fetch(url,
       {method: "POST",
-      body: JSON.stringify({id : new_id,board: new_board}),
+      body: JSON.stringify({id : new_id,boardsize: boardSize}),
       headers: {"content-type" : "application/json"},
     }
     );
@@ -104,6 +105,11 @@ class BoardCanvas extends React.Component{
     // console.log(boardX, boardY)
   }
 
+  getAIMove(){
+    const that = this;
+    get_next_bot_move(this.state.uuid, this.state.player, -1, -1, that)
+  }
+
 
   getMousePosition(canvas, e){
     let rect = canvas.getBoundingClientRect();
@@ -125,6 +131,7 @@ class BoardCanvas extends React.Component{
               width = {(this.state.width/0.70*0.30)}
               className = "consoleContainer">
               </Console>
+              <button onClick = {() => this.getAIMove()}> getBotMove</button>
            </div>
   }
 
@@ -145,4 +152,16 @@ async function get_next_board(uuid, player, x, y, that){
   var opponent = player === 1?2:1;
   if(data.played === true) that.setState({player:opponent});
   that.setState({board:data.board});
+}
+
+async function get_next_bot_move(uuid, player, x, y, that){
+  const url = "/playmoveai"
+  let response = await fetch(url,
+    {method: "POST",
+    body: JSON.stringify({id: uuid, player: player, x: x, y:y}),
+    headers: {"content-type": "application/json"},
+    }
+  );
+  let data = await response.json();
+
 }
