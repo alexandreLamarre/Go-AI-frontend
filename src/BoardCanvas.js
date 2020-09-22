@@ -10,7 +10,8 @@ class BoardCanvas extends React.Component{
     this.state = {
       height : window.innerHeight*0.7,
       width: window.innerHeight*0.7,
-      player : 2, // 1 for black, 2 for white
+      player : 1, // 1 for black, 2 for white
+      players: ["player", "ai"],
       board : [],
       uuid: 0,
     };
@@ -83,31 +84,27 @@ class BoardCanvas extends React.Component{
         }
       }
     }
+    if(this.state.players[this.state.player-1] == "ai"){
+      this.getAIMove();
+    }
   }
 
   play(e){
-    const pos = this.getMousePosition(this.canvas.current, e);
-    console.log(pos);
-    const tileSize = this.state.width/20;
+    if(this.state.players[this.state.player-1] == "player"){
+      const pos = this.getMousePosition(this.canvas.current, e);
+      console.log(pos);
+      const tileSize = this.state.width/20;
 
-    const boardX = Math.round(pos[0]/tileSize -1);
-    const boardY = Math.round(pos[1]/tileSize -1);
-    const that = this;
-    get_next_board(this.state.uuid, this.state.player, boardX, boardY, that);
-    var next_player = this.state.player;
-    // const board = this.state.board;
-    // if(boardX >= 0 && boardY >= 0 && boardX < board.length && boardY < board.length){
-    //   if(board[boardX][boardY] === 0){board[boardX][boardY] = this.state.player;
-    //   const player = this.state.player === 2? "Black": "White";
-    //   this.console.current.pushConsole("\n"+player+ " moved to (" + boardX.toString()+","+boardY.toString()+ ")");
-    //   next_player = this.state.player === 1? 2: 1;}
-    // }
-    // console.log(boardX, boardY)
+      const boardX = Math.round(pos[0]/tileSize -1);
+      const boardY = Math.round(pos[1]/tileSize -1);
+      const that = this;
+      get_next_board(this.state.uuid, this.state.player, boardX, boardY, that);
+    }
   }
 
   getAIMove(){
     const that = this;
-    get_next_bot_move(this.state.uuid, this.state.player, -1, -1, that)
+    get_next_bot_move(this.state.uuid, this.state.player, that)
   }
 
 
@@ -131,7 +128,8 @@ class BoardCanvas extends React.Component{
               width = {(this.state.width/0.70*0.30)}
               className = "consoleContainer">
               </Console>
-              <button onClick = {() => this.getAIMove()}> getBotMove</button>
+              <br></br>
+              <p className = "playing"> Now playing: {this.state.player === 1? "Black": "White"}</p>
            </div>
   }
 
@@ -150,18 +148,20 @@ async function get_next_board(uuid, player, x, y, that){
   let data = await response.json();
   that.console.current.pushConsole(data.message);
   var opponent = player === 1?2:1;
-  if(data.played === true) that.setState({player:opponent});
-  that.setState({board:data.board});
+  // if(data.played === true) that.setState({player:opponent});
+  await that.setState({board:data.board, player:opponent});
 }
 
-async function get_next_bot_move(uuid, player, x, y, that){
+async function get_next_bot_move(uuid, player, that){
   const url = "/playmoveai"
   let response = await fetch(url,
     {method: "POST",
-    body: JSON.stringify({id: uuid, player: player, x: x, y:y}),
+    body: JSON.stringify({id: uuid, player: player}),
     headers: {"content-type": "application/json"},
     }
   );
   let data = await response.json();
-
+  that.console.current.pushConsole(data.message);
+  var opponent = player === 1? 2: 1;
+  await that.setState({board:data.board, player:opponent});
 }
