@@ -13,11 +13,12 @@ class BoardCanvas extends React.Component{
       height : window.innerHeight*0.7,
       width: window.innerHeight*0.7,
       player : 1, // 1 for black, 2 for white
-      players: ["ai", "ai"],
+      players: ["player", "player"],
       boardsize: 19,
       board : [],
       uuid: 0,
       isPlaying: false,
+      ai_intervals: [],
     };
     this.canvas = React.createRef();
     this.console = React.createRef();
@@ -80,15 +81,19 @@ class BoardCanvas extends React.Component{
       }
     }
     document.getElementById("consoleInfo").scrollTop = document.getElementById("consoleInfo").scrollHeight
-    if(this.state.players[this.state.player-1] == "ai" && this.state.isPlaying === true){
-      this.getAIMove();
-    }
+    // if(this.state.isPlaying === false){
+    //   for(let i = 0; i < this.state.ai_intervals; i++){
+    //     clearInterval(this.state.ai_intervals[i]);
+    //   }
+    // }
   }
 
   play(e){
-    if(this.state.players[this.state.player-1] == "player" && this.state.isPlaying){
+    console.log(this.state.players[this.state.player-1])
+    console.log(this.state.isPlaying)
+    console.log(this.state.players[this.state.player-1] === "player" && this.state.isPlaying === true)
+    if(this.state.players[this.state.player-1] === "player" && this.state.isPlaying){
       const pos = this.getMousePosition(this.canvas.current, e);
-      console.log(pos);
       const tileSize = this.state.width/(this.state.boardsize+1);
 
       const boardX = Math.round(pos[0]/tileSize -1);
@@ -124,6 +129,13 @@ class BoardCanvas extends React.Component{
     waitSetBoardSize(that, value);
   }
 
+  setPlayerOrAI(player, v){
+    console.log(v);
+    const players = this.state.players;
+    players[player-1] = v;
+    this.setState({players: players})
+  }
+
 
   render(){
     return <div className = "boardCanvasContainer">
@@ -150,14 +162,24 @@ class BoardCanvas extends React.Component{
                 disabled = {this.state.isPlaying}>
               </input>
               <label className= "sizeLabel">Size: {this.state.boardsize}</label>
-              <select disabled = {this.state.isPlaying}>
+              <br></br>
+              <label> Black : </label>
+              <select onChange = {(e) => this.setPlayerOrAI(1, e.target.value)}>
+                <option value="player"> Player </option>
+                <option value = "ai"> AI </option>
+              </select>
+              <label> White : </label>
+              <select onChange = {(e) => this.setPlayerOrAI(2, e.target.value)}>
+                <option value="player"> Player </option>
+                <option value = "ai"> AI </option>
+              </select>
+              {/*<select disabled = {this.state.isPlaying}>
                 <option value = "random"> Random </option>
                 <option value = "minimax"> Minimax </option>
                 <option value = "alphabeta"> AlphaBeta </option>
-              </select>
-              <button onClick = {() => this.setPlaying(true)}> StartGame </button>
-              <button onClick = {() => this.getAIMove()}
-              disabled = {this.state.isPlaying === false}> Get AI move </button>
+              </select>*/}
+              <button onClick = {() => this.setPlaying(true)}
+              disabled = {this.state.isPlaying}> StartGame </button>
            </div>
   }
 
@@ -178,12 +200,16 @@ async function get_next_board(uuid, player, x, y, that){
   if(data.winner !== null) that.console.current.pushConsole(data.winner)
   if(data.valid)var opponent = player === 1?2:1;
   else{var opponent = player}
-  var playing = that.state.playing
+  var playing = that.state.isPlaying
   if(data.over === true){
     playing = false
     opponent = 1
   }
   await that.setState({board:data.board, player:opponent, isPlaying: playing});
+  if(that.state.players[opponent-1] === "ai" && that.state.isPlaying === true) {
+    console.log("ai's turn")
+    that.getAIMove();
+  };
 }
 
 async function get_next_bot_move(uuid, player, that, af){
@@ -206,12 +232,18 @@ async function get_next_bot_move(uuid, player, that, af){
     opponent = 1
   }
   await that.setState({board:data.board, player:opponent, isPlaying:playing});
+  console.log(that.state.players[opponent-1]);
+  if(that.state.players[opponent-1] === "ai" && that.state.isPlaying === true) {
+    console.log("ai's turn")
+    that.getAIMove();
+  };
   // if(data.over === true) await that.setState({isPlaying: false});
 }
 
 async function waitCreateNewBoard(that){
   const new_id = uuidv4();
   const url = "/input"
+  await waitSetBoardSize(that,that.state.boardsize);
   await fetch(url,
     {method: "POST",
     body: JSON.stringify({id : new_id,boardsize: that.state.boardsize}),
@@ -219,6 +251,15 @@ async function waitCreateNewBoard(that){
   }
   );
   await that.setState({uuid: new_id, isPlaying:true});
+  console.log("new game players", that.state.players)
+  if(that.state.players[that.state.player-1] === "ai" && that.state.isPlaying === true) {
+    console.log("ai's turn")
+    that.getAIMove();
+  };
+  // const ai_intervals = [];
+  // if(that.state.players[0] === "ai") ai_intervals.push(setInterval(() => {that.getAIMove()}, 100));
+  // if(that.state.players[1] === "ai") ai_intervals.push(setInterval(() => {that.getAIMove()}, 100));
+  // that.setState({ai_intervals: ai_intervals});
 }
 
 async function waitSetBoardSize(that, v){
