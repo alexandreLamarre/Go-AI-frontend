@@ -11,9 +11,11 @@ class BoardCanvas extends React.Component{
       height : window.innerHeight*0.7,
       width: window.innerHeight*0.7,
       player : 1, // 1 for black, 2 for white
-      players: ["player", "ai"],
+      players: ["ai", "ai"],
+      boardsize: 19,
       board : [],
       uuid: 0,
+      isPlaying: false,
     };
     this.canvas = React.createRef();
     this.console = React.createRef();
@@ -31,25 +33,26 @@ class BoardCanvas extends React.Component{
       }
       new_board.push(boardRow);
     }
-    const new_id = uuidv4();
-    const url = "/input"
-    fetch(url,
-      {method: "POST",
-      body: JSON.stringify({id : new_id,boardsize: boardSize}),
-      headers: {"content-type" : "application/json"},
-    }
-    );
-    this.setState({width : w, height: h, board: new_board, uuid: new_id});
+    this.setState({width : w, height: h, board: new_board});
   }
 
   componentDidUpdate(){
     this.canvas.current.width = this.state.width;
     this.canvas.current.height = this.state.height;
-
-    const numVerticalLines = 19;
+    console.log("boardsize received", this.state.boardsize)
+    let numVerticalLines = this.state.boardsize;
+    console.log("Set lines", numVerticalLines)
+    // console.log("numtiles", numVerticalLines)
     const ctx = this.canvas.current.getContext("2d");
     ctx.clearRect(0,0, this.canvas.current.width, this.canvas.current.height);
-    const tileSize = this.state.width/20;
+    console.log("Component width", this.state.width);
+    console.log("boardsize", this.state.boardsize)
+    let tileSize = this.state.width/(this.state.boardsize+1);
+
+    // console.log(this.state.width/6)
+    // console.log(this.state.width/7)
+    // console.log(this.state.width/20)
+    // console.log("tilesize", tileSize)
 
     for(let i = 1; i <numVerticalLines+1; i++){
       ctx.beginPath();
@@ -84,17 +87,18 @@ class BoardCanvas extends React.Component{
         }
       }
     }
+    console.log()
     document.getElementById("consoleInfo").scrollTop = document.getElementById("consoleInfo").scrollHeight
-    if(this.state.players[this.state.player-1] == "ai"){
+    if(this.state.players[this.state.player-1] == "ai" && this.state.isPlaying === true){
       this.getAIMove();
     }
   }
 
   play(e){
-    if(this.state.players[this.state.player-1] == "player"){
+    if(this.state.players[this.state.player-1] == "player" && this.state.isPlaying){
       const pos = this.getMousePosition(this.canvas.current, e);
       console.log(pos);
-      const tileSize = this.state.width/20;
+      const tileSize = this.state.width/(this.state.boardsize+1);
 
       const boardX = Math.round(pos[0]/tileSize -1);
       const boardY = Math.round(pos[1]/tileSize -1);
@@ -116,6 +120,18 @@ class BoardCanvas extends React.Component{
     return [x,y]
   }
 
+  setPlaying(v){
+    this.setState({isPlaying:true})
+    const that = this;
+    waitCreateNewBoard(that)
+  }
+
+  setBoardsize(v){
+    const value = parseInt(v);
+    const that = this;
+    waitSetBoardSize(that, value);
+  }
+
 
   render(){
     return <div className = "boardCanvasContainer">
@@ -131,11 +147,22 @@ class BoardCanvas extends React.Component{
               </Console>
               <br></br>
               <p className = "playing"> Now playing: {this.state.player === 1? "Black": "White"}</p>
-              <select>
+              <input
+                type = "range"
+                min = "5"
+                max = "19"
+                step = "1"
+                value = {this.state.boardsize}
+                onChange = {(event) => this.setBoardsize(event.target.value)}
+                disabled = {this.state.isPlaying}>
+              </input>
+              <label className= "sizeLabel">Size: {this.state.boardsize}</label>
+              <select disabled = {this.state.isPlaying}>
                 <option value = "random"> Random </option>
                 <option value = "minimax"> Minimax </option>
                 <option value = "alphabeta"> AlphaBeta </option>
               </select>
+              <button onClick = {() => this.setPlaying(true)}> StartGame </button>
            </div>
   }
 
@@ -171,4 +198,30 @@ async function get_next_bot_move(uuid, player, that){
   that.console.current.pushConsole(data.message);
   var opponent = player === 1? 2: 1;
   await that.setState({board:data.board, player:opponent});
+}
+
+async function waitCreateNewBoard(that){
+  const new_id = uuidv4();
+  const url = "/input"
+  await fetch(url,
+    {method: "POST",
+    body: JSON.stringify({id : new_id,boardsize: that.state.boardsize}),
+    headers: {"content-type" : "application/json"},
+  }
+  );
+  await that.setState({uuid: new_id});
+}
+
+async function waitSetBoardSize(that, v){
+  const new_board = [];
+  for(let i = 0; i < v; i++){
+    const new_board_row = [];
+    for(let j = 0; j < v; j++){
+      new_board_row.push(0);
+    }
+    new_board.push(new_board_row);
+  }
+  console.log("newboard", new_board);
+  console.log("newsize", v);
+  await that.setState({boardsize: v, board: new_board});
 }
