@@ -1,6 +1,8 @@
 import React from "react";
 import Console from "./Console";
 import {v4 as uuidv4} from "uuid";
+import Loader from "./Loader"
+
 import "./BoardCanvas.css"
 
 class BoardCanvas extends React.Component{
@@ -19,6 +21,7 @@ class BoardCanvas extends React.Component{
     };
     this.canvas = React.createRef();
     this.console = React.createRef();
+    this.loader = React.createRef();
   }
 
   componentDidMount(){
@@ -39,20 +42,10 @@ class BoardCanvas extends React.Component{
   componentDidUpdate(){
     this.canvas.current.width = this.state.width;
     this.canvas.current.height = this.state.height;
-    console.log("boardsize received", this.state.boardsize)
     let numVerticalLines = this.state.boardsize;
-    console.log("Set lines", numVerticalLines)
-    // console.log("numtiles", numVerticalLines)
     const ctx = this.canvas.current.getContext("2d");
     ctx.clearRect(0,0, this.canvas.current.width, this.canvas.current.height);
-    console.log("Component width", this.state.width);
-    console.log("boardsize", this.state.boardsize)
     let tileSize = this.state.width/(this.state.boardsize+1);
-
-    // console.log(this.state.width/6)
-    // console.log(this.state.width/7)
-    // console.log(this.state.width/20)
-    // console.log("tilesize", tileSize)
 
     for(let i = 1; i <numVerticalLines+1; i++){
       ctx.beginPath();
@@ -79,7 +72,6 @@ class BoardCanvas extends React.Component{
         }
         if(this.state.board[i][j] === 2){
           ctx.beginPath();
-          console.log((i+1)*tileSize, (j+1) *tileSize)
           ctx.arc((i+1)*tileSize, (j+1) *tileSize, tileSize/2.5, 0, Math.PI*2);
           ctx.fillStyle = "#FFFFFF";
           ctx.fill();
@@ -87,7 +79,6 @@ class BoardCanvas extends React.Component{
         }
       }
     }
-    console.log()
     document.getElementById("consoleInfo").scrollTop = document.getElementById("consoleInfo").scrollHeight
     if(this.state.players[this.state.player-1] == "ai" && this.state.isPlaying === true){
       this.getAIMove();
@@ -108,8 +99,10 @@ class BoardCanvas extends React.Component{
   }
 
   getAIMove(){
+    const color = this.state.player == 1?"black": "white"
+    const af = setInterval(() => {this.loader.current.animate(color)},1000/60);
     const that = this;
-    get_next_bot_move(this.state.uuid, this.state.player, that)
+    get_next_bot_move(this.state.uuid, this.state.player, that, af)
   }
 
 
@@ -121,7 +114,6 @@ class BoardCanvas extends React.Component{
   }
 
   setPlaying(v){
-    this.setState({isPlaying:true})
     const that = this;
     waitCreateNewBoard(that)
   }
@@ -147,6 +139,7 @@ class BoardCanvas extends React.Component{
               </Console>
               <br></br>
               <p className = "playing"> Now playing: {this.state.player === 1? "Black": "White"}</p>
+              <Loader ref = {this.loader}></Loader>
               <input
                 type = "range"
                 min = "5"
@@ -163,6 +156,8 @@ class BoardCanvas extends React.Component{
                 <option value = "alphabeta"> AlphaBeta </option>
               </select>
               <button onClick = {() => this.setPlaying(true)}> StartGame </button>
+              <button onClick = {() => this.getAIMove()}
+              disabled = {this.state.isPlaying === false}> Get AI move </button>
            </div>
   }
 
@@ -180,14 +175,18 @@ async function get_next_board(uuid, player, x, y, that){
   );
   let data = await response.json();
   that.console.current.pushConsole(data.message);
+  if(data.winner !== null) that.console.current.pushConsole(data.winner)
   if(data.valid)var opponent = player === 1?2:1;
   else{var opponent = player}
-  // if(data.played === true) that.setState({player:opponent});
-  await that.setState({board:data.board, player:opponent});
-  if(data.over === true) await that.setState({isPlaying: false})
+  var playing = that.state.playing
+  if(data.over === true){
+    playing = false
+    opponent = 1
+  }
+  await that.setState({board:data.board, player:opponent, isPlaying: playing});
 }
 
-async function get_next_bot_move(uuid, player, that){
+async function get_next_bot_move(uuid, player, that, af){
   const url = "/playmoveai"
   let response = await fetch(url,
     {method: "POST",
@@ -197,9 +196,17 @@ async function get_next_bot_move(uuid, player, that){
   );
   let data = await response.json();
   that.console.current.pushConsole(data.message);
+  if(data.winner !== null) that.console.current.pushConsole(data.winner)
   var opponent = player === 1? 2: 1;
-  await that.setState({board:data.board, player:opponent});
-  if(data.over === true) await that.setState({isPlaying: false})
+  clearInterval(af);
+  that.loader.current.clearAnimation();
+  var playing = that.state.isPlaying
+  if(data.over === true) {
+    playing = false
+    opponent = 1
+  }
+  await that.setState({board:data.board, player:opponent, isPlaying:playing});
+  // if(data.over === true) await that.setState({isPlaying: false});
 }
 
 async function waitCreateNewBoard(that){
@@ -211,7 +218,7 @@ async function waitCreateNewBoard(that){
     headers: {"content-type" : "application/json"},
   }
   );
-  await that.setState({uuid: new_id});
+  await that.setState({uuid: new_id, isPlaying:true});
 }
 
 async function waitSetBoardSize(that, v){
@@ -223,7 +230,7 @@ async function waitSetBoardSize(that, v){
     }
     new_board.push(new_board_row);
   }
-  console.log("newboard", new_board);
-  console.log("newsize", v);
+  // console.log("newboard", new_board);
+  // console.log("newsize", v);
   await that.setState({boardsize: v, board: new_board});
 }
