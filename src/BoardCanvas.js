@@ -184,6 +184,7 @@ async function get_next_board(uuid, player, x, y, that){
   else{var opponent = player}
   // if(data.played === true) that.setState({player:opponent});
   await that.setState({board:data.board, player:opponent});
+  if(data.over === true) await that.setState({isPlaying: false})
 }
 
 async function get_next_bot_move(uuid, player, that){
@@ -198,6 +199,7 @@ async function get_next_bot_move(uuid, player, that){
   that.console.current.pushConsole(data.message);
   var opponent = player === 1? 2: 1;
   await that.setState({board:data.board, player:opponent});
+  if(data.over === true) await that.setState({isPlaying: false})
 }
 
 async function waitCreateNewBoard(that){
