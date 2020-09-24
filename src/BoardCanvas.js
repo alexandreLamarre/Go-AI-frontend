@@ -81,11 +81,6 @@ class BoardCanvas extends React.Component{
       }
     }
     document.getElementById("consoleInfo").scrollTop = document.getElementById("consoleInfo").scrollHeight
-    // if(this.state.isPlaying === false){
-    //   for(let i = 0; i < this.state.ai_intervals; i++){
-    //     clearInterval(this.state.ai_intervals[i]);
-    //   }
-    // }
   }
 
   play(e){
@@ -108,7 +103,7 @@ class BoardCanvas extends React.Component{
     get_next_board(this.state.uuid, this.state.player, null, null, that, e)
   }
   getAIMove(){
-    const color = this.state.player == 1?"black": "white"
+    const color = this.state.player === 1?"black": "white"
     const af = setInterval(() => {this.loader.current.animate(color)},1000/60);
     const that = this;
     get_next_bot_move(this.state.uuid, this.state.player, that, af)
@@ -154,17 +149,17 @@ class BoardCanvas extends React.Component{
               className = "consoleContainer">
               </Console>
               <br></br>
-              <p className = "playing"> Now playing: {this.state.player === 1? "Black": "White"}</p>
               <button
-              disabled = {this.state.players[this.state.player-1] == "ai" && !this.state.isPlaying}
+              disabled = {this.state.isPlaying === true ? this.state.players[this.state.player-1] === "ai":false}
               onClick = {() => this.playOther("pass")}
               > Pass
               </button>
               <button
-              disabled = {this.state.players[this.state.player-1] == "ai" && !this.state.isPlaying}
+              disabled = {this.state.isPlaying === true? this.state.players[this.state.player-1] === "ai": false}
               onClick = {() => this.playOther("resign")}
               > Resign
               </button>
+              <p className = "playing"> Now playing: {this.state.player === 1? "Black": "White"}</p>
               <Loader ref = {this.loader}></Loader>
               <input
                 type = "range"
@@ -213,7 +208,7 @@ class BoardCanvas extends React.Component{
 export default BoardCanvas;
 
 async function get_next_board(uuid, player, x, y, that, move_type){
-  const url = "/playmoveplayer" + "/" + move_type;
+  const url = "/playmoveplayer/" + move_type;
   let response = await fetch(url,
     {method: "POST",
     body: JSON.stringify({id : uuid, player:player, x: x, y: y}),
@@ -224,7 +219,7 @@ async function get_next_board(uuid, player, x, y, that, move_type){
   that.console.current.pushConsole(data.message);
   if(data.winner !== null) that.console.current.pushConsole(data.winner)
   if(data.valid)var opponent = player === 1?2:1;
-  else{var opponent = player}
+  else{opponent = player}
   var playing = that.state.isPlaying
   if(data.over === true){
     playing = false
@@ -255,6 +250,7 @@ async function get_next_bot_move(uuid, player, that, af){
   if(data.over === true) {
     playing = false
     opponent = 1
+    console.log("over")
   }
   await that.setState({board:data.board, player:opponent, isPlaying:playing});
   console.log(that.state.players[opponent-1]);
