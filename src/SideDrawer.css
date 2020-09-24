@@ -20,6 +20,42 @@
   width: 30px;
   height: 2px;
   background-color:white;
+}
 
+.sidedrawer{
+  position:absolute;
+  top: 0%;
+  left: 0;
+  right:80%;
+  background-color: #606060;
+  border: 1px solid black;
+  transition: width 2s, height 0s;
+}
 
+.sidedraweroverlay{
+  position: fixed;
+    top: 3.7%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.2);
+}
+
+.settings{
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+}
+
+.settings a{
+  text-indent: 12px;
+  color:white;
+  text-decoration: none;
+  font-size: 1.5rem;
+}
+
+.settings a:hover{
+  color:orange;
+  text-decoration: none;
+  font-size: 1.5rem;
 }

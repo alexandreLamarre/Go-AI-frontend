@@ -138,7 +138,7 @@ class BoardCanvas extends React.Component{
 
 
   render(){
-    return <div className = "boardCanvasContainer">
+    return <div className = "boardCanvasContainer" id = "boardCanvasContainer">
               <canvas
               ref = {this.canvas}
               className = "boardCanvas"

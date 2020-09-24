@@ -8,7 +8,7 @@ function App() {
   return (
     <div className="App" style = {{height:'100%'}}>
       <GoNavBar/>
-      <BoardCanvas/>
+      <BoardCanvas id ="BC"/>
     </div>
   );
 }
