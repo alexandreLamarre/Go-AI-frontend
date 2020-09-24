@@ -1,0 +1,34 @@
+.settingsPanel{
+  position: absolute;
+  top: 0%;
+  left: 0;
+  right: 75%;
+  bottom: 0;
+  background-color: #606060;
+  border: 1px solid white;
+}
+
+.settingsPanelOverlay{
+  position: fixed;
+  top: 3.7%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.3);
+}
+
+.settingsPanelItems{
+  display:flex;
+  flex-direction: column;
+  color: white;
+  margin-left: 5%;
+  margin-right: 5%;
+}
+
+.slider{
+  width: 100%;
+}
+
+.sizeLabel{
+  margin-left: 5%;
+}

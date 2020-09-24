@@ -28,7 +28,7 @@
   left: 0;
   right:80%;
   background-color: #606060;
-  border: 1px solid black;
+  border: 1px solid white;
   transition: width 2s, height 0s;
 }
 
@@ -38,7 +38,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0,0,0,0.2);
+    background-color: rgba(0,0,0,0.3);
 }
 
 .settings{

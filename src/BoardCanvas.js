@@ -2,7 +2,7 @@ import React from "react";
 import Console from "./Console";
 import {v4 as uuidv4} from "uuid";
 import Loader from "./Loader";
-
+import SettingsPanel from "./SettingsPanel"
 
 import "./BoardCanvas.css";
 
@@ -24,6 +24,7 @@ class BoardCanvas extends React.Component{
     this.canvas = React.createRef();
     this.console = React.createRef();
     this.loader = React.createRef();
+    this.settings = React.createRef();
   }
 
   componentDidMount(){
@@ -136,6 +137,10 @@ class BoardCanvas extends React.Component{
     this.setState({players: players})
   }
 
+  openSettings(){
+    this.settings.current.setOpen(true);
+  }
+
 
   render(){
     return <div className = "boardCanvasContainer" id = "boardCanvasContainer">
@@ -149,17 +154,22 @@ class BoardCanvas extends React.Component{
               width = {(this.state.width/0.70*0.30)}
               className = "consoleContainer">
               </Console>
-              <br></br>
+              <SettingsPanel ref = {this.settings}></SettingsPanel>
+              <button onClick = {() => this.openSettings()}> Configure Game </button>
+              <button> Start Game</button>
               <button
-              disabled = {this.state.isPlaying === true ? this.state.players[this.state.player-1] === "ai":false}
+              disabled = {this.state.isPlaying === true ? this.state.players[this.state.player-1] === "ai":true}
               onClick = {() => this.playOther("pass")}
+              hidden = {this.state.isPlaying === false}
               > Pass
               </button>
               <button
-              disabled = {this.state.isPlaying === true? this.state.players[this.state.player-1] === "ai": false}
+              disabled = {this.state.isPlaying === true? this.state.players[this.state.player-1] === "ai": true}
               onClick = {() => this.playOther("resign")}
+              hidden = {this.state.isPlaying === false}
               > Resign
               </button>
+              <br></br>
               <p className = "playing"> Now playing: {this.state.player === 1? "Black": "White"}</p>
               <Loader ref = {this.loader}></Loader>
               <input
@@ -183,11 +193,6 @@ class BoardCanvas extends React.Component{
                 <option value="player"> Player </option>
                 <option value = "ai"> AI </option>
               </select>
-              {/*<select disabled = {this.state.isPlaying}>
-                <option value = "random"> Random </option>
-                <option value = "minimax"> Minimax </option>
-                <option value = "alphabeta"> AlphaBeta </option>
-              </select>*/}
               <button onClick = {() => this.setPlaying(true)}
               disabled = {this.state.isPlaying}> StartGame </button>
               <br></br>
