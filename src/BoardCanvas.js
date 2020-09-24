@@ -2,7 +2,7 @@ import React from "react";
 import Console from "./Console";
 import {v4 as uuidv4} from "uuid";
 import Loader from "./Loader";
-import GoNavBar from "./GoNavBar";
+
 
 import "./BoardCanvas.css";
 
@@ -139,7 +139,6 @@ class BoardCanvas extends React.Component{
 
   render(){
     return <div className = "boardCanvasContainer">
-              <GoNavBar/>
               <canvas
               ref = {this.canvas}
               className = "boardCanvas"

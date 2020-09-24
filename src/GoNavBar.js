@@ -1,5 +1,5 @@
 import React from "react";
-
+import {DrawerToggleButton} from "./SideDrawer"
 import "./GoNavBar.css";
 
 class GoNavBar extends React.Component{
@@ -11,6 +11,7 @@ class GoNavBar extends React.Component{
     return <div className = "gonavbar">
               <header className = "toolbar">
                 <nav className ="toolbar__navigation">
+                <div><DrawerToggleButton/></div>
                   <div className = "toolbar__logo"><a href = "/">Go AI </a></div>
                   <div className = "spacer"></div>
                   <div className = "toolbar_navigation-items">
