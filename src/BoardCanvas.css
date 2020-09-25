@@ -26,6 +26,11 @@
 
 .inputContainer{
   position: absolute;
+  top:80%;
   right: 5%;
 
+}
+
+.playbuttons{
+  margin-top: 2%;
 }

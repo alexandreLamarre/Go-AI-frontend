@@ -14,18 +14,23 @@ class BoardCanvas extends React.Component{
       height : window.innerHeight*0.7,
       width: window.innerHeight*0.7,
       player : 1, // 1 for black, 2 for white
-      players: ["player", "player"],
+      players: ["player", "player"], //black, white
       boardsize: 19,
       board : [],
       uuid: 0,
       isPlaying: false,
       ai_intervals: [],
       user: "Guest",
+      createRoom: false,
     };
     this.canvas = React.createRef();
     this.console = React.createRef();
     this.loader = React.createRef();
     this.settings = React.createRef();
+    this.pubnub = this.props.pubnub;
+    this.lobbyChannel = null;
+    this.gameChannel = null;
+    this.roomId = null;
   }
 
   componentDidMount(){
@@ -166,22 +171,27 @@ class BoardCanvas extends React.Component{
               className = "consoleContainer">
               </Console>
               <SettingsPanel parent = {this} ref = {this.settings}></SettingsPanel>
-              <button onClick = {() => this.openSettings()}
+              <button className = "playbuttons"
+              onClick = {() => this.openSettings()}
               hidden = {this.state.isPlaying === true} >
               Configure Game
               </button>
-              <button
+              <button className = "playbuttons"
+              hidden = {this.state.isPlaying === true}>
+              Create Game Room
+              </button>
+              <button className = "playbuttons"
               onClick = {() => this.setPlaying(true)}
               hidden = {this.state.isPlaying === true}>
               Start Game
               </button>
-              <button
+              <button className = "playbuttons"
               disabled = {this.state.isPlaying === true ? this.state.players[this.state.player-1] === "ai":true}
               onClick = {() => this.playOther("pass")}
               hidden = {this.state.isPlaying === false}
               > Pass
               </button>
-              <button
+              <button className = "playbuttons"
               disabled = {this.state.isPlaying === true? this.state.players[this.state.player-1] === "ai": true}
               onClick = {() => this.playOther("resign")}
               hidden = {this.state.isPlaying === false}
