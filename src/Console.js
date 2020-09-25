@@ -12,7 +12,7 @@ class Console extends React.Component{
     };
     this.infoStyle = {
       color: "black",
-      height: window.innerHeight*0.7,
+      height: window.innerHeight*0.695,
       width: this.props.width,
     }
   }

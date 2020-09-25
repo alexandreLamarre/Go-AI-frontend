@@ -14,3 +14,18 @@
 .sizeLabel{
   color:white;
 }
+
+.inputMessage{
+  resize:none;
+  vertical-align: middle;
+}
+
+.chatLabel{
+  color:white;
+}
+
+.inputContainer{
+  position: absolute;
+  right: 5%;
+
+}

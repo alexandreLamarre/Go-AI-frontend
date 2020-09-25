@@ -8,19 +8,14 @@ class SettingsPanel extends React.Component{
     super(props);
     this.state = {
       open:false,
-      boardsize: 19,
       playerTypeBlack: "player",
       playerTypeWhite: "player",
+      parent: this.props.parent,
     };
   };
 
   setOpen(v){
     this.setState({open:v});
-  }
-
-  setBoardSize(v){
-    const value = parseInt(v)
-    this.setState({boardsize: value})
   }
 
   render(){
@@ -30,14 +25,15 @@ class SettingsPanel extends React.Component{
               className = "settingsPanel"
               overlayClassName = "settingsPanelOverlay">
               <div className = "settingsPanelItems">
+                <br></br>
                 <h2> Players </h2>
                 <label> Black : </label>
-                <select>
+                <select onChange = {(e) => this.state.parent.setPlayerOrAI(1,e.target.value)}>
                   <option value = "player"> Player </option>
                   <option value = "ai"> AI </option>
                 </select>
                 <label> White : </label>
-                <select>
+                <select onChange = {(e) => this.state.parent.setPlayerOrAI(2, e.target.value)}>
                   <option value = "player"> Player </option>
                   <option value = "ai"> AI </option>
                 </select>
@@ -49,11 +45,11 @@ class SettingsPanel extends React.Component{
                     min = "5"
                     max = "19"
                     step = "1"
-                    value = {this.state.boardsize}
-                    onChange = {(event) => this.setBoardSize(event.target.value)}
+                    value = {this.state.parent.state.boardsize}
+                    onChange = {(event) => this.state.parent.setBoardsize(event.target.value)}
                     disabled = {this.state.isPlaying}>
                   </input>
-                  <label className= "sizeLabel">Size: {this.state.boardsize}</label>
+                  <label className= "sizeLabel">Size: {this.state.parent.state.boardsize}</label>
                 </div>
                 <h2> AI Settings </h2>
                 <label> Black: </label>

@@ -20,6 +20,7 @@ class BoardCanvas extends React.Component{
       uuid: 0,
       isPlaying: false,
       ai_intervals: [],
+      user: "Guest",
     };
     this.canvas = React.createRef();
     this.console = React.createRef();
@@ -141,6 +142,16 @@ class BoardCanvas extends React.Component{
     this.settings.current.setOpen(true);
   }
 
+  sendMessage(event){
+    if(event.which === 13 && !event.shiftKey){
+      var el = document.getElementById("chat")
+      var val = el.value.replace(" ", "");
+      val = val.replace("\n", "");
+      if(val !== "") this.console.current.pushConsole("\n\n" + this.state.user+ ": " + el.value);
+      el.value = "";
+      setCaretToPos(el, 1);
+    }
+  }
 
   render(){
     return <div className = "boardCanvasContainer" id = "boardCanvasContainer">
@@ -154,9 +165,16 @@ class BoardCanvas extends React.Component{
               width = {(this.state.width/0.70*0.30)}
               className = "consoleContainer">
               </Console>
-              <SettingsPanel ref = {this.settings}></SettingsPanel>
-              <button onClick = {() => this.openSettings()}> Configure Game </button>
-              <button> Start Game</button>
+              <SettingsPanel parent = {this} ref = {this.settings}></SettingsPanel>
+              <button onClick = {() => this.openSettings()}
+              hidden = {this.state.isPlaying === true} >
+              Configure Game
+              </button>
+              <button
+              onClick = {() => this.setPlaying(true)}
+              hidden = {this.state.isPlaying === true}>
+              Start Game
+              </button>
               <button
               disabled = {this.state.isPlaying === true ? this.state.players[this.state.player-1] === "ai":true}
               onClick = {() => this.playOther("pass")}
@@ -169,43 +187,18 @@ class BoardCanvas extends React.Component{
               hidden = {this.state.isPlaying === false}
               > Resign
               </button>
-              <br></br>
-              <p className = "playing"> Now playing: {this.state.player === 1? "Black": "White"}</p>
+              <div className = "inputContainer">
+                <label className ="chatLabel"> Chat: <textarea className = "inputMessage"
+                id = "chat"
+                rows="1"
+                onKeyPress = {(e) => this.sendMessage(e)}>
+                </textarea></label>
+              </div>
+              <p className = "playing"
+              hidden = {this.state.isPlaying === false}
+              > Now playing: {this.state.player === 1? "Black": "White"}
+              </p>
               <Loader ref = {this.loader}></Loader>
-              <input
-                type = "range"
-                min = "5"
-                max = "19"
-                step = "1"
-                value = {this.state.boardsize}
-                onChange = {(event) => this.setBoardsize(event.target.value)}
-                disabled = {this.state.isPlaying}>
-              </input>
-              <label className= "sizeLabel">Size: {this.state.boardsize}</label>
-              <br></br>
-              <label> Black : </label>
-              <select onChange = {(e) => this.setPlayerOrAI(1, e.target.value)}>
-                <option value="player"> Player </option>
-                <option value = "ai"> AI </option>
-              </select>
-              <label> White : </label>
-              <select onChange = {(e) => this.setPlayerOrAI(2, e.target.value)}>
-                <option value="player"> Player </option>
-                <option value = "ai"> AI </option>
-              </select>
-              <button onClick = {() => this.setPlaying(true)}
-              disabled = {this.state.isPlaying}> StartGame </button>
-              <br></br>
-              <label> Black AI type : </label>
-              <select>
-                <option value = "random"> Random </option>
-                <option value = "alpha-beta"> Alpha-beta </option>
-              </select>
-              <label> White AI type : </label>
-              <select>
-                <option value = "random"> Random</option>
-                <option value = "alpha-beta">Alpha-beta</option>
-              </select>
            </div>
   }
 
@@ -301,4 +294,23 @@ async function waitSetBoardSize(that, v){
   // console.log("newboard", new_board);
   // console.log("newsize", v);
   await that.setState({boardsize: v, board: new_board});
+}
+
+
+function setSelectionRange(input, selectionStart, selectionEnd){
+  if(input.setSelectionRange){
+    input.focus();
+    input.setSelectionRange(selectionStart,selectionEnd);
+  }
+  else if(input.createTextRange){
+    var range = input.createTextRange();
+    range.collapse(true);
+    range.moveEnd('character', selectionEnd);
+    range.moveStart('character', selectionStart);
+    range.select();
+  }
+}
+
+function setCaretToPos(input, pos){
+  setSelectionRange(input, pos, pos);
 }
