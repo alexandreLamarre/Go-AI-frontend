@@ -59,3 +59,22 @@
   text-decoration: none;
   font-size: 1.5rem;
 }
+
+.settings button{
+  text-indent: 12px;
+  color:white;
+  text-decoration: none;
+  font-size: 1.5rem;
+  border: none;
+  background-color: Transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+.settings button:hover{
+  color:orange;
+  text-decoration: none;
+  font-size: 1.5rem;
+  border: none;
+  cursor: pointer;
+}

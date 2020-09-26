@@ -1,6 +1,7 @@
 import React from "react";
-import Modal from "react-modal"
-import "./SideDrawer.css"
+import Modal from "react-modal";
+import "./SideDrawer.css";
+import {useAuth0} from "@auth0/auth0-react";
 
 Modal.setAppElement("#root")
 
@@ -11,6 +12,27 @@ export const DrawerToggleButton = props => (
     <div className = "toggle_button-line"></div>
   </button>
 )
+
+const LoginButton = () => {
+  const {loginWithRedirect} = useAuth0();
+  return <button onClick = {() => loginWithRedirect()}>
+            Sign up / Sign in
+          </button>
+}
+
+const LogoutButton = () => {
+  const {logout} = useAuth0();
+  return <button onClick = {() => logout()}>
+          Sign out
+         </button>
+}
+
+const Profile = () => {
+  const {user} = useAuth0();
+  return <div>
+            {JSON.stringify(user, null, 2)}
+         </div>
+}
 
 class SideDrawer extends React.Component{
   constructor(props){
@@ -29,6 +51,7 @@ class SideDrawer extends React.Component{
   }
 
   render(){
+
     return <div>
             <Modal isOpen = {this.state.open}
             onRequestClose = {() => this.setOpen(false)}
@@ -37,16 +60,17 @@ class SideDrawer extends React.Component{
             >
               <div className = "settings">
                 <br></br>
-                <a href= "/"> New Game</a>
+                <button> New Game</button>
                 <br></br>
-                <a href= "/"> Join Game</a>
+                <button> Join Game</button>
                 <br></br>
-                <a href= "/"> User Stats</a>
+                <button> User Stats</button>
                 <br></br>
-                <a href= "/"> Sign in</a>
+                <LoginButton/>
                 <br></br>
-                <a href= "/"> Sign up</a>
+                <LogoutButton/>
                 <br></br>
+                <Profile/>
               </div>
             </Modal>
           </div>
