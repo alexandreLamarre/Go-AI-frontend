@@ -3,8 +3,9 @@
 }
 
 .boardCanvas{
-  margin-top: 5%;
   background-color: #DEB887;
+  border: 1px solid black;
+  border-right: none;
 }
 
 .playing{
@@ -16,6 +17,8 @@
 }
 
 .inputMessage{
+  margin-bottom: 1.5%;
+  margin-left: 5%;
   resize:none;
   vertical-align: middle;
 }
@@ -25,12 +28,19 @@
 }
 
 .inputContainer{
-  position: absolute;
-  top:80%;
-  right: 5%;
-
+  margin-top: -1%;
+  background-color: #606060;
+  border: 1px solid black;
+  border-top: none;
 }
 
 .playbuttons{
   margin-top: 2%;
+}
+
+.main{
+  justify-content:center;
+  margin-top: 5%;
+  display: flex;
+  flex-direction: row;
 }

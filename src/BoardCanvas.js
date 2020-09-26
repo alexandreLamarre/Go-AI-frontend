@@ -160,16 +160,29 @@ class BoardCanvas extends React.Component{
 
   render(){
     return <div className = "boardCanvasContainer" id = "boardCanvasContainer">
-              <canvas
-              ref = {this.canvas}
-              className = "boardCanvas"
-              onMouseDown = {(event) => this.play(event)}>
-              </canvas>
-              <Console ref = {this.console}
-              height = {(this.state.height/0.70) *0.30}
-              width = {(this.state.width/0.70*0.30)}
-              className = "consoleContainer">
-              </Console>
+              <div className = "main">
+                <canvas
+                ref = {this.canvas}
+                className = "boardCanvas"
+                onMouseDown = {(event) => this.play(event)}>
+                </canvas>
+                <div className = "gamehistory">
+                <Console ref = {this.console}
+                height = {(this.state.height/0.70) *0.30}
+                width = {(this.state.width/0.70*0.30)}
+                className = "consoleContainer">
+                </Console>
+                  <div className = "inputContainer">
+                    <label className ="chatLabel"> Chat:
+                      <textarea className = "inputMessage"
+                      id = "chat"
+                      rows="1"
+                      onKeyPress = {(e) => this.sendMessage(e)}>
+                      </textarea>
+                    </label>
+                  </div>
+                </div>
+              </div>
               <SettingsPanel parent = {this} ref = {this.settings}></SettingsPanel>
               <button className = "playbuttons"
               onClick = {() => this.openSettings()}
@@ -197,13 +210,6 @@ class BoardCanvas extends React.Component{
               hidden = {this.state.isPlaying === false}
               > Resign
               </button>
-              <div className = "inputContainer">
-                <label className ="chatLabel"> Chat: <textarea className = "inputMessage"
-                id = "chat"
-                rows="1"
-                onKeyPress = {(e) => this.sendMessage(e)}>
-                </textarea></label>
-              </div>
               <p className = "playing"
               hidden = {this.state.isPlaying === false}
               > Now playing: {this.state.player === 1? "Black": "White"}
