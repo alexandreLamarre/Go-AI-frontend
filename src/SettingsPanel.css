@@ -6,6 +6,7 @@
   bottom: 0;
   background-color: #606060;
   border: 1px solid white;
+  outline: none;
 }
 
 .settingsPanelOverlay{

@@ -1,5 +1,7 @@
 import React from "react";
 import Modal from "react-modal";
+import JoinGameWindow from "./JoinGameWindow";
+
 import "./SideDrawer.css";
 import {useAuth0} from "@auth0/auth0-react";
 
@@ -40,6 +42,7 @@ class SideDrawer extends React.Component{
     this.state = {
       open:false,
     }
+    this.joingame = React.createRef();
   }
 
   setOpen(v){
@@ -58,11 +61,13 @@ class SideDrawer extends React.Component{
             className = "sidedrawer"
             overlayClassName = "sidedraweroverlay"
             >
+            <JoinGameWindow parent = {this} ref = {this.joingame}>
+            </JoinGameWindow>
               <div className = "settings">
                 <br></br>
-                <button> New Game</button>
+                <a href ="/"> New Game</a>
                 <br></br>
-                <button> Join Game</button>
+                <button onClick = {() => this.joingame.current.setOpen(true)}> Join Game</button>
                 <br></br>
                 <button> User Stats</button>
                 <br></br>

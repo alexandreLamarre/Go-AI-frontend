@@ -1,0 +1,41 @@
+.joingamewindow{
+  position:absolute;
+  top: 40%;
+  left: 50%;
+  margin-top: -25px;
+  margin-left: -200px;
+  width: 400px;
+  height: 50px;
+  background-color: #606060;
+  border: 1px solid white;
+  outline:none;
+}
+
+.joingamewindowoverlay{
+  position: fixed;
+    top: 2rem;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.3);
+}
+
+.joingamelabel{
+  padding-right: 10px;
+  color: white;
+  text-align: center;
+}
+
+.joingametextarea{
+  margin-top: 1%;
+  margin-bottom: 1%;
+  resize: none;
+  vertical-align: middle;
+
+}
+
+.joingamecontainer{
+  justify-content: center;
+  display:flex;
+  flex-direction: row;
+}

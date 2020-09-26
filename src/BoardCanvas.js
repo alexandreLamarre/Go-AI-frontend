@@ -174,11 +174,11 @@ class BoardCanvas extends React.Component{
                 </Console>
                   <div className = "inputContainer">
                     <label className ="chatLabel"> Chat:
-                      <textarea className = "inputMessage"
+                      <input className = "inputMessage"
                       id = "chat"
                       rows="1"
                       onKeyPress = {(e) => this.sendMessage(e)}>
-                      </textarea>
+                      </input>
                     </label>
                   </div>
                 </div>
