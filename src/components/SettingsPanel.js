@@ -25,7 +25,7 @@ class SettingsPanel extends React.Component{
               className = "settingsPanel"
               overlayClassName = "settingsPanelOverlay">
               <div className = "settingsPanelItems">
-                <br></br>
+                <br/>
                 <h2> Players </h2>
                 <label> Black : </label>
                 <select onChange = {(e) => this.state.parent.setPlayerOrAI(1,e.target.value)}>
@@ -37,7 +37,7 @@ class SettingsPanel extends React.Component{
                   <option value = "player"> Player </option>
                   <option value = "ai"> AI </option>
                 </select>
-                <br></br>
+                <br/>
                 <h2> Board size </h2>
                 <div className = "slider">
                   <input

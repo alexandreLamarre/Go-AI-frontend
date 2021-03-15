@@ -1,10 +1,12 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './App.css';
-import BoardCanvas from "./BoardCanvas";
-import GoNavBar from "./GoNavBar";
+import BoardCanvas from "./components/BoardCanvas";
+import GoNavBar from "./components/GoNavBar";
 
 
 function App() {
+
+
     return (
       <div className="App" style = {{height:'100%'}}>
         <GoNavBar/>

@@ -25,7 +25,7 @@ class JoinGameWindow extends React.Component{
                 <div className = "joingamecontainer">
                   <label className = "joingamelabel">
                   Game ID:
-                    <br></br>
+                    <br/>
                     <input className = "joingametextarea">
                     </input>
                   </label>

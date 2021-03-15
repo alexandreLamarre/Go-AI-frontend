@@ -1,0 +1,24 @@
+.profile{
+    border-radius: 25px;
+    background-color: #cfcbcb;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    position:absolute;
+    top: 0;
+}
+
+.profileImage{
+    margin-left: 5%;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+}
+
+.noSelect{
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+}
