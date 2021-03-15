@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import Modal from "react-modal";
 import JoinGameWindow from "./JoinGameWindow";
 
@@ -50,6 +50,7 @@ const SideDrawer = props => {
                 <LoginButton/>
                 <br/>
                 <LogoutButton/>
+                <br/>
               </div>
             </Modal>
           </div>)

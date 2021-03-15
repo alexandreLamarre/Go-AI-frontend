@@ -3,7 +3,7 @@ import Console from "./Console";
 import {v4 as uuidv4} from "uuid";
 import Loader from "./Loader";
 import SettingsPanel from "./SettingsPanel"
-
+import {connect} from "../api/index"
 import "./BoardCanvas.css";
 
 class BoardCanvas extends React.Component{
@@ -34,6 +34,7 @@ class BoardCanvas extends React.Component{
   }
 
   componentDidMount(){
+    connect("/")
     const w = window.innerHeight*0.7;
     const h = window.innerHeight*0.7;
     const new_board = [];
@@ -102,19 +103,20 @@ class BoardCanvas extends React.Component{
       const boardX = Math.round(pos[0]/tileSize -1);
       const boardY = Math.round(pos[1]/tileSize -1);
       const that = this;
-      get_next_board(this.state.uuid, this.state.player, boardX, boardY, that, "point");
+      getNextBoard(this.state.uuid, this.state.player, boardX, boardY, that, "point");
     }
   }
 
   playOther(e){
     const that = this;
-    get_next_board(this.state.uuid, this.state.player, null, null, that, e)
+    getNextBoard(this.state.uuid, this.state.player, null, null, that, e)
   }
+
   getAIMove(){
     const color = this.state.player === 1?"black": "white"
     const af = setInterval(() => {this.loader.current.animate(color)},1000/60);
     const that = this;
-    get_next_bot_move(this.state.uuid, this.state.player, that, af)
+    getNextBotMove(this.state.uuid, this.state.player, that, af)
   }
 
 
@@ -183,7 +185,7 @@ class BoardCanvas extends React.Component{
                   </div>
                 </div>
               </div>
-              <SettingsPanel parent = {this} ref = {this.settings}></SettingsPanel>
+              <SettingsPanel parent = {this} ref = {this.settings}/>
               <button className = "playbuttons"
               onClick = {() => this.openSettings()}
               hidden = {this.state.isPlaying === true} >
@@ -214,7 +216,7 @@ class BoardCanvas extends React.Component{
               hidden = {this.state.isPlaying === false}
               > Now playing: {this.state.player === 1? "Black": "White"}
               </p>
-              <Loader ref = {this.loader}></Loader>
+              <Loader ref = {this.loader}/>
            </div>
   }
 
@@ -222,7 +224,7 @@ class BoardCanvas extends React.Component{
 
 export default BoardCanvas;
 
-async function get_next_board(uuid, player, x, y, that, move_type){
+async function getNextBoard(uuid, player, x, y, that, move_type){
   const url = "/playmoveplayer/" + move_type;
   let response = await fetch(url,
     {method: "POST",
@@ -247,7 +249,7 @@ async function get_next_board(uuid, player, x, y, that, move_type){
   };
 }
 
-async function get_next_bot_move(uuid, player, that, af){
+async function getNextBotMove(uuid, player, that, af){
   const url = "/playmoveai"
   let response = await fetch(url,
     {method: "POST",

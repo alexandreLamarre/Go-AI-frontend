@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import './App.css';
 import BoardCanvas from "./components/BoardCanvas";
 import GoNavBar from "./components/GoNavBar";
