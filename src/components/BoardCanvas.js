@@ -5,36 +5,34 @@ import Loader from "./Loader";
 import SettingsPanel from "./SettingsPanel"
 import {connect} from "../api/index"
 import "./BoardCanvas.css";
+import { Auth0Context } from "@auth0/auth0-react";
 
 class BoardCanvas extends React.Component{
+  static contextType = Auth0Context;
   constructor(props){
     super(props);
 
     this.state = {
       height : window.innerHeight*0.7,
       width: window.innerHeight*0.7,
-      player : 1, // 1 for black, 2 for white
-      players: ["player", "player"], //black, white
-      boardsize: 19,
+      player : -1, // 1 for black, 2 for white, -1 for unassigned
+      currentPlayer: 1,
+      playerSettings: ["player", "player"], //[0]:black, [1]:white
+      connectedPlayers: [],
+      boardSize: 19,
       board : [],
-      uuid: 0,
+      guestUuid: "Guest" + uuidv4(),
       isPlaying: false,
-      ai_intervals: [],
-      user: "Guest",
-      createRoom: false,
-    };
-    this.canvas = React.createRef();
-    this.console = React.createRef();
-    this.loader = React.createRef();
-    this.settings = React.createRef();
-    this.pubnub = this.props.pubnub;
-    this.lobbyChannel = null;
-    this.gameChannel = null;
-    this.roomId = null;
-  }
+      gameSocket: null,
+      gameId: null,
+      messages: [],
+    }
+    console.log(this.state.isPlaying)
 
+    this.canvas = React.createRef();
+    this.settings = React.createRef();
+  }
   componentDidMount(){
-    connect("/")
     const w = window.innerHeight*0.7;
     const h = window.innerHeight*0.7;
     const new_board = [];
@@ -47,15 +45,21 @@ class BoardCanvas extends React.Component{
       new_board.push(boardRow);
     }
     this.setState({width : w, height: h, board: new_board});
+    this.animate();
   }
 
-  componentDidUpdate(){
+  animate(){
+    this.drawBoard()
+    window.requestAnimationFrame(() => this.animate())
+  }
+
+  drawBoard(){
     this.canvas.current.width = this.state.width;
     this.canvas.current.height = this.state.height;
-    let numVerticalLines = this.state.boardsize;
+    let numVerticalLines = this.state.boardSize;
     const ctx = this.canvas.current.getContext("2d");
     ctx.clearRect(0,0, this.canvas.current.width, this.canvas.current.height);
-    let tileSize = this.state.width/(this.state.boardsize+1);
+    let tileSize = this.state.width/(this.state.boardSize+1);
 
     for(let i = 1; i <numVerticalLines+1; i++){
       ctx.beginPath();
@@ -89,36 +93,7 @@ class BoardCanvas extends React.Component{
         }
       }
     }
-    document.getElementById("consoleInfo").scrollTop = document.getElementById("consoleInfo").scrollHeight
   }
-
-  play(e){
-    console.log(this.state.players[this.state.player-1])
-    console.log(this.state.isPlaying)
-    console.log(this.state.players[this.state.player-1] === "player" && this.state.isPlaying === true)
-    if(this.state.players[this.state.player-1] === "player" && this.state.isPlaying){
-      const pos = this.getMousePosition(this.canvas.current, e);
-      const tileSize = this.state.width/(this.state.boardsize+1);
-
-      const boardX = Math.round(pos[0]/tileSize -1);
-      const boardY = Math.round(pos[1]/tileSize -1);
-      const that = this;
-      getNextBoard(this.state.uuid, this.state.player, boardX, boardY, that, "point");
-    }
-  }
-
-  playOther(e){
-    const that = this;
-    getNextBoard(this.state.uuid, this.state.player, null, null, that, e)
-  }
-
-  getAIMove(){
-    const color = this.state.player === 1?"black": "white"
-    const af = setInterval(() => {this.loader.current.animate(color)},1000/60);
-    const that = this;
-    getNextBotMove(this.state.uuid, this.state.player, that, af)
-  }
-
 
   getMousePosition(canvas, e){
     let rect = canvas.getBoundingClientRect();
@@ -127,38 +102,63 @@ class BoardCanvas extends React.Component{
     return [x,y]
   }
 
-  setPlaying(v){
-    const that = this;
-    waitCreateNewBoard(that)
-  }
 
   setBoardsize(v){
     const value = parseInt(v);
-    const that = this;
-    waitSetBoardSize(that, value);
+    this.setState({boardSize: value})
   }
 
   setPlayerOrAI(player, v){
     console.log(v);
-    const players = this.state.players;
+    const players = this.state.playerSettings;
     players[player-1] = v;
-    this.setState({players: players})
+    this.setState({playerSettings: players})
   }
 
   openSettings(){
     this.settings.current.setOpen(true);
   }
 
-  sendMessage(event){
-    if(event.which === 13 && !event.shiftKey){
-      var el = document.getElementById("chat")
-      var val = el.value.replace(" ", "");
-      val = val.replace("\n", "");
-      if(val !== "") this.console.current.pushConsole("\n\n" + this.state.user+ ": " + el.value);
-      el.value = "";
-      setCaretToPos(el, 1);
+
+  sendMessage(e){
+    if(e.keyCode === 13){
+      if(this.state.gameSocket === null) {
+        alert("Connect to a game first, before trying to chat")
+      } else{
+        const {isAuthenticated, user} = this.context
+        const name = isAuthenticated? user.nickname: this.state.guestUuid;
+        //TODO: send and parse this to backend
+        this.state.gameSocket.emit("Message",
+            {data:{user: name, data: e.target.value, gameId: this.state.gameId}});
+      }
+      e.target.value = "";
     }
   }
+
+  startGame(){
+    //get player id/nickname
+    const {isAuthenticated, user} = this.context
+    const name = isAuthenticated? user.nickname: this.state.guestUuid;
+    const gameUuid = this.state.gameId === null?uuidv4():this.state.gameId
+    const cb = () => this.setState({gameId: gameUuid, gameSocket: socket, isPlaying: true})
+    const msgCb = (msg) => this.appendMessage(msg)
+    const socket = connect("", {
+      connectCb: cb,
+      msgCb: msgCb,
+      username: name,
+      gameId: gameUuid})
+
+    this.setState({gameSocket: socket})
+
+  }
+
+  appendMessage(msgData){
+    const messages = this.state.messages;
+    messages.push(msgData)
+    this.setState({messages: messages})
+  }
+
+
 
   render(){
     return <div className = "boardCanvasContainer" id = "boardCanvasContainer">
@@ -169,54 +169,45 @@ class BoardCanvas extends React.Component{
                 onMouseDown = {(event) => this.play(event)}>
                 </canvas>
                 <div className = "gamehistory">
-                <Console ref = {this.console}
-                height = {(this.state.height/0.70) *0.30}
-                width = {(this.state.width/0.70*0.30)}
+                <Console messages = {this.state.messages}
+                height = {!this.canvas.current? 0: this.canvas.current.width}
                 className = "consoleContainer">
                 </Console>
                   <div className = "inputContainer">
                     <label className ="chatLabel"> Chat:
-                      <input className = "inputMessage"
-                      id = "chat"
-                      rows="1"
-                      onKeyPress = {(e) => this.sendMessage(e)}>
+                      <input
+                          className = "inputMessage"
+                          id = "chat"
+                          rows="1"
+                          onKeyDown = {(e) => this.sendMessage(e)}>
                       </input>
                     </label>
                   </div>
                 </div>
               </div>
               <SettingsPanel parent = {this} ref = {this.settings}/>
-              <button className = "playbuttons"
-              onClick = {() => this.openSettings()}
-              hidden = {this.state.isPlaying === true} >
-              Configure Game
-              </button>
-              <button className = "playbuttons"
-              hidden = {this.state.isPlaying === true}>
-              Create Game Room
-              </button>
-              <button className = "playbuttons"
-              onClick = {() => this.setPlaying(true)}
-              hidden = {this.state.isPlaying === true}>
-              Start Game
-              </button>
-              <button className = "playbuttons"
-              disabled = {this.state.isPlaying === true ? this.state.players[this.state.player-1] === "ai":true}
-              onClick = {() => this.playOther("pass")}
-              hidden = {this.state.isPlaying === false}
-              > Pass
-              </button>
-              <button className = "playbuttons"
-              disabled = {this.state.isPlaying === true? this.state.players[this.state.player-1] === "ai": true}
-              onClick = {() => this.playOther("resign")}
-              hidden = {this.state.isPlaying === false}
-              > Resign
-              </button>
-              <p className = "playing"
-              hidden = {this.state.isPlaying === false}
-              > Now playing: {this.state.player === 1? "Black": "White"}
-              </p>
-              <Loader ref = {this.loader}/>
+              {!this.state.isPlaying? (<div>
+                <button className = "playbuttons"
+                        onClick = {() => this.openSettings()}>
+                  Configure Game
+                </button>
+                <button className = "playbuttons"
+                        onClick = {() => this.startGame()}>
+                  Start Game
+                </button>
+              </div>): (<div>
+                  <button className = "playbuttons"
+                    > Pass
+                  </button>
+                  <button className = "playbuttons"
+                    > Resign
+                  </button>
+                  <div className = "playing"
+                    > Now playing: {this.state.currentPlayer === 1? "Black": "White"}
+                  </div>
+                  <Loader/>
+                </div>)
+              }
            </div>
   }
 
@@ -224,111 +215,3 @@ class BoardCanvas extends React.Component{
 
 export default BoardCanvas;
 
-async function getNextBoard(uuid, player, x, y, that, move_type){
-  const url = "/playmoveplayer/" + move_type;
-  let response = await fetch(url,
-    {method: "POST",
-    body: JSON.stringify({id : uuid, player:player, x: x, y: y}),
-    headers: {"content-type" : "application/json"},
-    }
-  );
-  let data = await response.json();
-  that.console.current.pushConsole(data.message);
-  if(data.winner !== null) that.console.current.pushConsole(data.winner)
-  if(data.valid)var opponent = player === 1?2:1;
-  else{opponent = player}
-  var playing = that.state.isPlaying
-  if(data.over === true){
-    playing = false
-    opponent = 1
-  }
-  await that.setState({board:data.board, player:opponent, isPlaying: playing});
-  if(that.state.players[opponent-1] === "ai" && that.state.isPlaying === true) {
-    console.log("ai's turn")
-    that.getAIMove();
-  };
-}
-
-async function getNextBotMove(uuid, player, that, af){
-  const url = "/playmoveai"
-  let response = await fetch(url,
-    {method: "POST",
-    body: JSON.stringify({id: uuid, player: player}),
-    headers: {"content-type": "application/json"},
-    }
-  );
-  let data = await response.json();
-  that.console.current.pushConsole(data.message);
-  if(data.winner !== null) that.console.current.pushConsole(data.winner)
-  var opponent = player === 1? 2: 1;
-  clearInterval(af);
-  that.loader.current.clearAnimation();
-  var playing = that.state.isPlaying
-  if(data.over === true) {
-    playing = false
-    opponent = 1
-    console.log("over")
-  }
-  await that.setState({board:data.board, player:opponent, isPlaying:playing});
-  console.log(that.state.players[opponent-1]);
-  if(that.state.players[opponent-1] === "ai" && that.state.isPlaying === true) {
-    console.log("ai's turn")
-    that.getAIMove();
-  };
-  // if(data.over === true) await that.setState({isPlaying: false});
-}
-
-async function waitCreateNewBoard(that){
-  const new_id = uuidv4();
-  const url = "/input"
-  await waitSetBoardSize(that,that.state.boardsize);
-  await fetch(url,
-    {method: "POST",
-    body: JSON.stringify({id : new_id,boardsize: that.state.boardsize}),
-    headers: {"content-type" : "application/json"},
-  }
-  );
-  await that.setState({uuid: new_id, isPlaying:true});
-  console.log("new game players", that.state.players)
-  if(that.state.players[that.state.player-1] === "ai" && that.state.isPlaying === true) {
-    console.log("ai's turn")
-    that.getAIMove();
-  };
-  // const ai_intervals = [];
-  // if(that.state.players[0] === "ai") ai_intervals.push(setInterval(() => {that.getAIMove()}, 100));
-  // if(that.state.players[1] === "ai") ai_intervals.push(setInterval(() => {that.getAIMove()}, 100));
-  // that.setState({ai_intervals: ai_intervals});
-}
-
-async function waitSetBoardSize(that, v){
-  const new_board = [];
-  for(let i = 0; i < v; i++){
-    const new_board_row = [];
-    for(let j = 0; j < v; j++){
-      new_board_row.push(0);
-    }
-    new_board.push(new_board_row);
-  }
-  // console.log("newboard", new_board);
-  // console.log("newsize", v);
-  await that.setState({boardsize: v, board: new_board});
-}
-
-
-function setSelectionRange(input, selectionStart, selectionEnd){
-  if(input.setSelectionRange){
-    input.focus();
-    input.setSelectionRange(selectionStart,selectionEnd);
-  }
-  else if(input.createTextRange){
-    var range = input.createTextRange();
-    range.collapse(true);
-    range.moveEnd('character', selectionEnd);
-    range.moveStart('character', selectionStart);
-    range.select();
-  }
-}
-
-function setCaretToPos(input, pos){
-  setSelectionRange(input, pos, pos);
-}

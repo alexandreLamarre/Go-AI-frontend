@@ -8,14 +8,12 @@ class SettingsPanel extends React.Component{
     super(props);
     this.state = {
       open:false,
-      playerTypeBlack: "player",
-      playerTypeWhite: "player",
-      parent: this.props.parent,
-    };
-  };
+    }
+    this.parent = this.props.parent
+  }
 
   setOpen(v){
-    this.setState({open:v});
+    this.setState({open:v})
   }
 
   render(){
@@ -28,12 +26,14 @@ class SettingsPanel extends React.Component{
                 <br/>
                 <h2> Players </h2>
                 <label> Black : </label>
-                <select onChange = {(e) => this.state.parent.setPlayerOrAI(1,e.target.value)}>
+                <select value = {this.parent.state.playerSettings[0]}
+                    onChange = {(e) => this.parent.setPlayerOrAI(1,e.target.value)}>
                   <option value = "player"> Player </option>
                   <option value = "ai"> AI </option>
                 </select>
                 <label> White : </label>
-                <select onChange = {(e) => this.state.parent.setPlayerOrAI(2, e.target.value)}>
+                <select value = {this.parent.state.playerSettings[1]}
+                    onChange = {(e) => this.parent.setPlayerOrAI(2, e.target.value)}>
                   <option value = "player"> Player </option>
                   <option value = "ai"> AI </option>
                 </select>
@@ -45,11 +45,11 @@ class SettingsPanel extends React.Component{
                     min = "5"
                     max = "19"
                     step = "1"
-                    value = {this.state.parent.state.boardsize}
-                    onChange = {(event) => this.state.parent.setBoardsize(event.target.value)}
+                    value = {this.parent.state.boardSize}
+                    onChange = {(event) => this.parent.setBoardsize(event.target.value)}
                     disabled = {this.state.isPlaying}>
                   </input>
-                  <label className= "sizeLabel">Size: {this.state.parent.state.boardsize}</label>
+                  <label className= "sizeLabel">Size: {this.parent.state.boardSize}</label>
                 </div>
                 <h2> AI Settings </h2>
                 <label> Black: </label>

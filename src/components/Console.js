@@ -3,41 +3,24 @@ import React from "react";
 import "./Console.css";
 
 
-class Console extends React.Component{
-  constructor(props){
-    super(props)
-    console.log(this.props.height, this.props.width)
-    this.state = {
-      history: "Game History",
-    };
-    this.infoStyle = {
-      color: "black",
-      height: window.innerHeight*0.695,
-      width: this.props.width,
-    }
-  }
+const Console = props => {
 
-  componentDidUpdate(){
+    const messages = props.messages.map((msg, index) =>
+      <div
+          style = {{maxWidth: "200px", fontWeight: msg.user?"normal": "bold"}}
+          key = {index}>
+          <br/>
+          {msg.user?msg.user + " : ":""} {msg.data}
+          <br/>
+      </div>
+    )
 
-  }
-
-  pushConsole(infoString){
-    var history = this.state.history;
-    history += infoString;
-    this.setState({history: history});
-  }
-
-
-  render(){
-    // let newText = this.state.history.split('\n').map((item, i) => {
-    //   return <p className = "move" ekey={i}>{item}</p>;
-    // });
-
-    return <div className = "consoleContainer">
-              <textarea id = "consoleInfo"
-              className = "consoleInfo" style = {this.infoStyle} value = {this.state.history} readOnly>  </textarea>
+    return <div className = "consoleInfo"
+            style = {{height: props.height, maxHeight: props.height,  overflowY: "auto"}}>
+             <b> Game History/ Messages</b>
+              {messages}
           </div>
-  }
+
 }
 
 export default Console;
