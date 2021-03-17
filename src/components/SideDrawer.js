@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import Modal from "react-modal";
 import JoinGameWindow from "./JoinGameWindow";
 
@@ -31,19 +31,24 @@ const LogoutButton = () => {
 
 
 const SideDrawer = props => {
-
+    const [joinOpen, setJoinOpen ] = useState(false)
     return (<div>
             <Modal isOpen = {props.open}
             onRequestClose = {() => {props.setOpen(false)}}
             className = "sidedrawer"
             overlayClassName = "sidedraweroverlay"
             >
-            <JoinGameWindow/>
+            <JoinGameWindow
+                gameRef = {props.gameRef}
+                open = {joinOpen} setOpen = {setJoinOpen}/>
               <div className = "settings">
                 <br/>
                 <a href ="/"> New Game</a>
                 <br/>
-                <button onClick = {() => this.joingame.current.setOpen(true)}> Join Game</button>
+                <button onClick = {() => setJoinOpen(true)}>
+                    {props.gameRef.current === null || props.gameRef.current.state.gameSocket === null?
+                        "Join Game": "Game ID"}
+                </button>
                 <br/>
                 <button> User Stats</button>
                 <br/>

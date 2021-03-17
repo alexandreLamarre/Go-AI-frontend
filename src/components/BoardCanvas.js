@@ -26,6 +26,7 @@ class BoardCanvas extends React.Component{
       gameSocket: null,
       gameId: null,
       messages: [],
+      isConnecting: false,
     }
     console.log(this.state.isPlaying)
 
@@ -105,7 +106,15 @@ class BoardCanvas extends React.Component{
 
   setBoardsize(v){
     const value = parseInt(v);
-    this.setState({boardSize: value})
+    const newBoard = [];
+    for(let i = 0; i < value; i++){
+      const newBoardRow = [];
+      for(let j = 0; j < value; j++){
+        newBoardRow.push(0)
+      }
+      newBoard.push(newBoardRow)
+    }
+    this.setState({boardSize: value, board: newBoard})
   }
 
   setPlayerOrAI(player, v){
@@ -123,39 +132,64 @@ class BoardCanvas extends React.Component{
   sendMessage(e){
     if(e.keyCode === 13){
       if(this.state.gameSocket === null) {
-        alert("Connect to a game first, before trying to chat")
+        alert("Connect to a game before trying to chat")
       } else{
         const {isAuthenticated, user} = this.context
         const name = isAuthenticated? user.nickname: this.state.guestUuid;
-        //TODO: send and parse this to backend
-        this.state.gameSocket.emit("Message",
-            {data:{user: name, data: e.target.value, gameId: this.state.gameId}});
+        this.state.gameSocket.emit("broadcastMessage",
+            {data:{user: name, message: e.target.value, gameId: this.state.gameId}});
       }
       e.target.value = "";
     }
   }
 
-  startGame(){
+  async startGame(gameId){
     //get player id/nickname
+    await this.setState({isConnecting: true})
     const {isAuthenticated, user} = this.context
     const name = isAuthenticated? user.nickname: this.state.guestUuid;
-    const gameUuid = this.state.gameId === null?uuidv4():this.state.gameId
+    const gameUuid = gameId === null || gameId === undefined?uuidv4():gameId
     const cb = () => this.setState({gameId: gameUuid, gameSocket: socket, isPlaying: true})
     const msgCb = (msg) => this.appendMessage(msg)
     const socket = connect("", {
       connectCb: cb,
       msgCb: msgCb,
       username: name,
-      gameId: gameUuid})
-
+      gameId: gameUuid,
+      boardSize: this.state.boardSize})
     this.setState({gameSocket: socket})
 
   }
 
   appendMessage(msgData){
-    const messages = this.state.messages;
-    messages.push(msgData)
-    this.setState({messages: messages})
+    if(msgData.gameId === this.state.gameId){
+      const messages = this.state.messages;
+      messages.push(msgData)
+      this.setState({messages: messages})
+    }
+  }
+
+  closeConnection(){
+    if(this.state.gameSocket !== null){
+      this.state.gameSocket.close()
+      this.resetToDefault()
+    }
+  }
+
+  resetToDefault(){
+    this.setBoardsize(this.state.boardSize)
+    this.setState({
+      gameId: null,
+      gameSocket: null,
+      player: -1,
+      isConnecting: true
+    })
+  }
+
+  play(e){
+    if(this.state.gameSocket === null) return
+
+    alert("Play move")
   }
 
 
@@ -166,7 +200,7 @@ class BoardCanvas extends React.Component{
                 <canvas
                 ref = {this.canvas}
                 className = "boardCanvas"
-                onMouseDown = {(event) => this.play(event)}>
+                onClick = {(event) => this.play(event)}>
                 </canvas>
                 <div className = "gamehistory">
                 <Console messages = {this.state.messages}
@@ -188,10 +222,12 @@ class BoardCanvas extends React.Component{
               <SettingsPanel parent = {this} ref = {this.settings}/>
               {!this.state.isPlaying? (<div>
                 <button className = "playbuttons"
+                        disabled = {this.state.isConnecting}
                         onClick = {() => this.openSettings()}>
                   Configure Game
                 </button>
                 <button className = "playbuttons"
+                        disabled = {this.state.isConnecting}
                         onClick = {() => this.startGame()}>
                   Start Game
                 </button>

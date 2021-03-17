@@ -8,7 +8,12 @@ let connect = (path, params) => {
     var socket = io.connect(BACKEND_URL);
     socket.on("connect", () => {
         params.connectCb();
-        socket.emit("connected", {data:{username:params.username, gameId: params.gameId}})
+        socket.emit("connected", {
+            data:{
+                username:params.username,
+                gameId: params.gameId,
+                boardSize: params.boardSize}
+        })
     })
 
     socket.on("Message", data => {

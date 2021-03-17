@@ -7,12 +7,14 @@ import {useAuth0} from "@auth0/auth0-react";
 
 
 
-function GoNavBar (){
+const GoNavBar = props =>{
 
     const isAuth = useAuth0().isAuthenticated;
     const [open, setOpen ] = useState(false)
     return (<div className = "gonavbar">
-              <SideDrawer setOpen = {setOpen} open = {open} />
+              <SideDrawer
+                  gameRef = {props.gameRef}
+                  setOpen = {setOpen} open = {open} />
               <header className = "toolbar">
                 <nav className ="toolbar__navigation">
                 <div>
